@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KeyMoan — Moaning Keyboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Theme Variables ===== */
+    :root {
+      --transition-speed: 0.35s;
+    }
+
+    [data-theme="dark"] {
+      --bg:             #0a0a0a;
+      --bg-nav:         rgba(10, 10, 10, 0.85);
+      --nav-border:     #1a1a1a;
+      --text:           #e0e0e0;
+      --text-muted:     #666;
+      --text-faint:     #333;
+      --heading:        #f0f0f0;
+      --card-bg:        #111111;
+      --card-border:    #1e1e1e;
+      --card-border-focus: #2a2a2a;
+      --topbar-dot:     #1e1e1e;
+      --topbar-dot-border: #2a2a2a;
+      --topbar-label:   #444;
+      --textarea-color: #c8c8c8;
+      --textarea-placeholder: #333;
+      --bar-bg:         #2a2a2a;
+      --keystroke-color: #333;
+      --keystroke-active: #555;
+      --footer-color:   #2a2a2a;
+      --kbd-bg:         #151515;
+      --kbd-border:     #222;
+      --kbd-color:      #444;
+      --glow1:          rgba(255, 60, 80, 0.04);
+      --glow2:          rgba(200, 50, 70, 0.03);
+      --ripple-color:   rgba(255, 60, 80, 0.06);
+      --accent:         #ff4060;
+      --focus-shadow:   rgba(255, 255, 255, 0.03);
+      --card-shadow:    rgba(0, 0, 0, 0.4);
+      --logo-color:     #f0f0f0;
+      --toggle-bg:      #1a1a1a;
+      --toggle-border:  #2a2a2a;
+      --toggle-icon:    #e0e0e0;
+    }
+
+    [data-theme="light"] {
+      --bg:             #f5f5f0;
+      --bg-nav:         rgba(245, 245, 240, 0.88);
+      --nav-border:     #e0ddd5;
+      --text:           #2a2a2a;
+      --text-muted:     #888;
+      --text-faint:     #bbb;
+      --heading:        #1a1a1a;
+      --card-bg:        #ffffff;
+      --card-border:    #e5e2db;
+      --card-border-focus: #d0cdc5;
+      --topbar-dot:     #e8e5de;
+      --topbar-dot-border: #ddd9d0;
+      --topbar-label:   #aaa;
+      --textarea-color: #333;
+      --textarea-placeholder: #c0b8a8;
+      --bar-bg:         #d5d0c5;
+      --keystroke-color: #bbb;
+      --keystroke-active: #888;
+      --footer-color:   #ccc;
+      --kbd-bg:         #edeae3;
+      --kbd-border:     #ddd9d0;
+      --kbd-color:      #999;
+      --glow1:          rgba(255, 100, 80, 0.04);
+      --glow2:          rgba(220, 80, 60, 0.03);
+      --ripple-color:   rgba(255, 60, 80, 0.08);
+      --accent:         #e03050;
+      --focus-shadow:   rgba(0, 0, 0, 0.04);
+      --card-shadow:    rgba(0, 0, 0, 0.08);
+      --logo-color:     #1a1a1a;
+      --toggle-bg:      #edeae3;
+      --toggle-border:  #ddd9d0;
+      --toggle-icon:    #555;
+    }
+
+    /* ===== Reset ===== */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+    }
+
+    /* Subtle ambient background glow */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -40%;
+      left: -20%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(circle, var(--glow1) 0%, transparent 70%);
+      pointer-events: none;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -30%;
+      right: -20%;
+      width: 50%;
+      height: 50%;
+      background: radial-gradient(circle, var(--glow2) 0%, transparent 70%);
+      pointer-events: none;
+      animation: drift 15s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes drift {
+      0%   { transform: translate(0, 0); }
+      100% { transform: translate(40px, 30px); }
+    }
+
+    /* ===== Navbar ===== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 56px;
+      background: var(--bg-nav);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--nav-border);
+      transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    }
+
+    .navbar-logo {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--logo-color);
+      transition: color var(--transition-speed) ease;
+      user-select: none;
+    }
+
+    .navbar-logo .logo-accent {
+      color: var(--accent);
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      position: relative;
+      width: 44px;
+      height: 26px;
+      background: var(--toggle-bg);
+      border: 1px solid var(--toggle-border);
+      border-radius: 13px;
+      cursor: pointer;
+      transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease;
+      display: flex;
+      align-items: center;
+      padding: 0 3px;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+    }
+
+    .toggle-knob {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--transition-speed) ease, background var(--transition-speed) ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+
+    [data-theme="light"] .toggle-knob {
+      transform: translateX(18px);
+    }
+
+    .toggle-knob svg {
+      width: 12px;
+      height: 12px;
+      fill: none;
+      stroke: var(--toggle-icon);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke var(--transition-speed) ease;
+    }
+
+    /* Moon icon (dark mode) */
+    .icon-moon { display: block; }
+    .icon-sun  { display: none; }
+    [data-theme="light"] .icon-moon { display: none; }
+    [data-theme="light"] .icon-sun  { display: block; }
+
+    /* ===== Container ===== */
+    .container {
+      width: 100%;
+      max-width: 640px;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 2.5rem;
+    }
+
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: var(--heading);
+      margin-bottom: 0.5rem;
+      transition: color var(--transition-speed) ease;
+    }
+
+    .header h1 span {
+      display: inline-block;
+      animation: pulse-emoji 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-emoji {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.15); }
+    }
+
+    .header p {
+      font-size: 0.875rem;
+      font-weight: 300;
+      color: var(--text-muted);
+      line-height: 1.5;
+      transition: color var(--transition-speed) ease;
+    }
+
+    /* Textarea card */
+    .editor-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.4s ease, box-shadow 0.4s ease, background var(--transition-speed) ease;
+    }
+
+    .editor-card:focus-within {
+      border-color: var(--card-border-focus);
+      box-shadow: 0 0 0 1px var(--focus-shadow), 0 8px 40px var(--card-shadow);
+    }
+
+    .editor-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--nav-border);
+      transition: border-color var(--transition-speed) ease;
+    }
+
+    .topbar-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .topbar-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--topbar-dot);
+      border: 1px solid var(--topbar-dot-border);
+      transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    }
+
+    .topbar-label {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--topbar-label);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color var(--transition-speed) ease;
+    }
+
+    textarea {
+      width: 100%;
+      height: 280px;
+      background: transparent;
+      color: var(--textarea-color);
+      border: none;
+      outline: none;
+      padding: 1.25rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 300;
+      line-height: 1.7;
+      resize: none;
+      caret-color: var(--accent);
+      transition: color var(--transition-speed) ease;
+    }
+
+    textarea::placeholder {
+      color: var(--textarea-placeholder);
+      font-style: italic;
+      transition: color var(--transition-speed) ease;
+    }
+
+    /* Bottom bar */
+    .editor-bottombar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1rem;
+      border-top: 1px solid var(--nav-border);
+      transition: border-color var(--transition-speed) ease;
+    }
+
+    .keystroke-count {
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--keystroke-color);
+      letter-spacing: 0.04em;
+      transition: color 0.3s ease;
+    }
+
+    .keystroke-count.active {
+      color: var(--keystroke-active);
+    }
+
+    .sound-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sound-indicator .bar {
+      width: 2px;
+      height: 8px;
+      background: var(--bar-bg);
+      border-radius: 1px;
+      transition: height 0.15s ease, background 0.15s ease;
+    }
+
+    .sound-indicator.playing .bar:nth-child(1) { height: 14px; background: var(--accent); }
+    .sound-indicator.playing .bar:nth-child(2) { height: 6px;  background: var(--accent); }
+    .sound-indicator.playing .bar:nth-child(3) { height: 18px; background: var(--accent); }
+    .sound-indicator.playing .bar:nth-child(4) { height: 10px; background: var(--accent); }
+    .sound-indicator.playing .bar:nth-child(5) { height: 14px; background: var(--accent); }
+
+    /* Footer hint */
+    .footer {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .footer p {
+      font-size: 0.7rem;
+      font-weight: 300;
+      color: var(--footer-color);
+      letter-spacing: 0.06em;
+      transition: color var(--transition-speed) ease;
+    }
+
+    .footer kbd {
+      display: inline-block;
+      background: var(--kbd-bg);
+      border: 1px solid var(--kbd-border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.65rem;
+      color: var(--kbd-color);
+      margin: 0 2px;
+      transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease, color var(--transition-speed) ease;
+    }
+
+    /* Ripple flash on keypress */
+    .ripple {
+      position: fixed;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--ripple-color) 0%, transparent 70%);
+      pointer-events: none;
+      transform: scale(0);
+      animation: ripple-out 0.6s ease-out forwards;
+      z-index: 0;
+    }
+
+    @keyframes ripple-out {
+      0%   { transform: scale(0); opacity: 1; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-logo">Key<span class="logo-accent">Moan</span></div>
+    <div class="theme-toggle" id="theme-toggle" role="button" aria-label="Toggle theme" tabindex="0">
+      <div class="toggle-knob">
+        <!-- Moon icon -->
+        <svg class="icon-moon" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+        </svg>
+        <!-- Sun icon -->
+        <svg class="icon-sun" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="header">
+      <h1><span>😩</span> Moaning Keyboard</h1>
+      <p>Click inside and start typing — each keystroke triggers a sound</p>
+    </div>
+
+    <div class="editor-card" id="editor-card">
+      <div class="editor-topbar">
+        <div class="topbar-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="topbar-label">session</div>
+      </div>
+
+      <textarea id="input" placeholder="Start typing here…"></textarea>
+
+      <div class="editor-bottombar">
+        <div class="keystroke-count" id="keystroke-count">0 keystrokes</div>
+        <div class="sound-indicator" id="sound-indicator">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>press any <kbd>key</kbd> to play · click anywhere for a surprise</p>
+    </div>
+  </div>
+
+  <script>
+    const textarea = document.getElementById('input');
+    const keystrokeEl = document.getElementById('keystroke-count');
+    const indicator = document.getElementById('sound-indicator');
+    const toggleBtn = document.getElementById('theme-toggle');
+    let keystrokes = 0;
+
+    // ===== Theme Toggle =====
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('keymoan-theme', theme);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('keymoan-theme') || 'dark';
+    setTheme(savedTheme);
+
+    toggleBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+
+    toggleBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleBtn.click();
+      }
+    });
+
+    // ===== Audio =====
+    const moanSounds = [
+      new Audio('sounds/gentle1.mp3'),
+      new Audio('sounds/gentle2.1.mp3'),
+      new Audio('sounds/gentle2.2.mp3'),
+    ];
+    moanSounds.forEach(s => s.preload = 'auto');
+
+    function playMoan() {
+      const picked = moanSounds[Math.floor(Math.random() * moanSounds.length)];
+      const sound = picked.cloneNode();
+      sound.volume = 1.0;
+      sound.play().catch(() => {});
+
+      indicator.classList.add('playing');
+      setTimeout(() => indicator.classList.remove('playing'), 200);
+    }
+
+    function spawnRipple(x, y) {
+      const r = document.createElement('div');
+      r.className = 'ripple';
+      r.style.left = (x - 60) + 'px';
+      r.style.top = (y - 60) + 'px';
+      document.body.appendChild(r);
+      r.addEventListener('animationend', () => r.remove());
+    }
+
+    // Trigger on every key press inside the textarea
+    textarea.addEventListener('keydown', (e) => {
+      playMoan();
+      keystrokes++;
+      keystrokeEl.textContent = keystrokes + (keystrokes === 1 ? ' keystroke' : ' keystrokes');
+      keystrokeEl.classList.add('active');
+      setTimeout(() => keystrokeEl.classList.remove('active'), 300);
+
+      const rect = textarea.getBoundingClientRect();
+      spawnRipple(
+        rect.left + Math.random() * rect.width,
+        rect.top + Math.random() * rect.height
+      );
+    });
+
+    // Click anywhere on the page also plays the sound
+    document.addEventListener('click', (e) => {
+      if (e.target !== textarea && !toggleBtn.contains(e.target)) {
+        playMoan();
+        spawnRipple(e.clientX, e.clientY);
+      }
+    });
+  </script>
+</body>
+</html>
