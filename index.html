@@ -510,6 +510,10 @@
     ];
     moanSounds.forEach(s => s.preload = 'auto');
 
+    // Yamete sound — only plays on Enter / Space
+    const yameteSound = new Audio('sounds/yamete.mp3');
+    yameteSound.preload = 'auto';
+
     function playMoan() {
       const picked = moanSounds[Math.floor(Math.random() * moanSounds.length)];
       const sound = picked.cloneNode();
@@ -518,6 +522,15 @@
 
       indicator.classList.add('playing');
       setTimeout(() => indicator.classList.remove('playing'), 200);
+    }
+
+    function playYamete() {
+      const sound = yameteSound.cloneNode();
+      sound.volume = 1.0;
+      sound.play().catch(() => {});
+
+      indicator.classList.add('playing');
+      setTimeout(() => indicator.classList.remove('playing'), 400);
     }
 
     function spawnRipple(x, y) {
@@ -531,7 +544,13 @@
 
     // Trigger on every key press inside the textarea
     textarea.addEventListener('keydown', (e) => {
-      playMoan();
+      // Enter or Space → yamete, everything else → random moan
+      if (e.key === 'Enter' || e.key === ' ') {
+        playYamete();
+      } else {
+        playMoan();
+      }
+
       keystrokes++;
       keystrokeEl.textContent = keystrokes + (keystrokes === 1 ? ' keystroke' : ' keystrokes');
       keystrokeEl.classList.add('active');
