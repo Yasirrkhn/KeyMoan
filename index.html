@@ -505,13 +505,17 @@
     // ===== Audio =====
     const moanSounds = [
       new Audio('sounds/gentle1.mp3'),
+      new Audio('sounds/mon1.mp3'),
       new Audio('sounds/gentle2.1.mp3'),
+      new Audio('sounds/mon2.mp3'),
       new Audio('sounds/gentle2.2.mp3'),
+      new Audio('sounds/yamete.mp3'),
+      new Audio('sounds/mon3.mp3'),
     ];
     moanSounds.forEach(s => s.preload = 'auto');
 
     // Yamete sound — only plays on Enter / Space
-    const yameteSound = new Audio('sounds/yamete.mp3');
+    const yameteSound = new Audio('sounds/yamete1.mp3');
     yameteSound.preload = 'auto';
 
     function playMoan() {
